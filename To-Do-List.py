@@ -19,8 +19,6 @@ settings = {
             }
 tasks = []
 
-
-marked_tasks = []
 scroll_pos = 0
 running = True
 
@@ -55,16 +53,15 @@ def change_font_size(new_scaling: str):
 
 
 def remove_elements():
-    global marked_tasks
     global tasks
 
     new_tasks = []
 
-    for i, task in enumerate(tasks):
-        if not i+1 in marked_tasks:
+    for task in tasks:
+        if task[1] == 0:
             new_tasks.append(task)
 
-    marked_tasks = []
+
     tasks = new_tasks
 
     setup_list(scroll_pos)
@@ -75,13 +72,18 @@ def add_element(c):
 
     if tabview_root.current_name == "To Do List":
         if entry.get() != "" and not entry.get().isspace():
-            tasks.append(entry.get())
+            tasks.append([entry.get(), 0])
             setup_list(scroll_pos)
             entry.delete(0, customtkinter.END)
 
 
 def mark_element(element):
-    marked_tasks.append(element)
+    global tasks
+
+    if tasks[element-1][1] == 1:
+        tasks[element-1] = [tasks[element-1][0], 0]
+    else:
+        tasks[element-1] = [tasks[element-1][0], 1]
 
 
 def setup_list(progress):
@@ -101,7 +103,10 @@ def setup_list(progress):
 
 
     for count, task in enumerate(tasks):
-        listbox = customtkinter.CTkCheckBox(master=tasks_frame, text=task, font=(settings.get("text_font"), settings.get("text_size")), command=lambda i=count+1: mark_element(i))
+        listbox = customtkinter.CTkCheckBox(master=tasks_frame, text=task[0], font=(settings.get("text_font"), settings.get("text_size")), command=lambda i=count+1: mark_element(i))
+        if task[1] == 1:
+            listbox.select()
+
         if settings.get("text_size") <= 30:
             listbox.place(x=0, y=30 + 30 * count + progress)
 
